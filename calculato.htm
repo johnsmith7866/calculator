@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>iPhone Style Scientific Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "SF Pro Display", sans-serif;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .calculator {
+      background: #1c1c1c;
+      border-radius: 30px;
+      padding: 20px;
+      width: 400px;
+      max-width: 100%;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .display {
+      background: black;
+      color: white;
+      font-size: 40px;
+      text-align: right;
+      padding: 20px 10px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      min-height: 60px;
+      word-wrap: break-word;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      height: 60px;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.1s ease, background 0.2s;
+      background: #505050;
+    }
+
+    button:active {
+      transform: scale(0.95);
+      background: #6b6b6b;
+    }
+
+    .orange {
+      background: #ff9500;
+    }
+
+    .gray {
+      background: #a5a5a5;
+      color: black;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator">
+  <div id="display" class="display">0</div>
+  <div class="buttons">
+    <button class="orange" onclick="clearDisplay()">AC</button>
+    <button class="orange" onclick="press('(')">(</button>
+    <button class="orange" onclick="press(')')">)</button>
+    <button class="orange" onclick="toggleShift()">Shift</button>
+    <button class="dark-gray" onclick="backspace()">⌫</button>
+
+    <button class="orange shift-secondary hidden" onclick="press('sin(')">sin</button>
+    <button class="orange shift-secondary hidden" onclick="press('cos(')">cos</button>
+    <button class="orange shift-secondary hidden" onclick="press('tan(')">tan</button>
+    <button class="orange shift-secondary hidden" onclick="press('asin(')">sin⁻¹</button>
+    <button class="orange shift-secondary hidden" onclick="press('acos(')">cos⁻¹</button>
+    <button class="orange shift-secondary hidden" onclick="press('atan(')">tan⁻¹</button>
+
+    <button class="dark-gray" onclick="press('7')">7</button>
+    <button class="dark-gray" onclick="press('8')">8</button>
+    <button class="dark-gray" onclick="press('9')">9</button>
+    <button class="dark-gray" onclick="press('sqrt(')">√</button>
+    <button class="orange" onclick="press('/')">÷</button>
+
+    <button class="dark-gray" onclick="press('4')">4</button>
+    <button class="dark-gray" onclick="press('5')">5</button>
+    <button class="dark-gray" onclick="press('6')">6</button>
+    <button class="dark-gray" onclick="press('log10(')">log</button>
+    <button class="orange" onclick="press('*')">×</button>
+
+    <button class="dark-gray" onclick="press('1')">1</button>
+    <button class="dark-gray" onclick="press('2')">2</button>
+    <button class="dark-gray" onclick="press('3')">3</button>
+    <button class="dark-gray" onclick="press('log(')">ln</button>
+    <button class="orange" onclick="press('-')">−</button>
+
+    <button class="dark-gray" onclick="press('Math.PI')">π</button>
+    <button class="dark-gray" onclick="press('0')">0</button>
+    <button class="dark-gray" onclick="press('.')">.</button>
+    <button class="dark-gray" onclick="press('Math.E')">e</button>
+    <button class="orange" onclick="press('+')">+</button>
+
+    <button class="orange" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+  let display = document.getElementById("display");
+  let expression = "";
+  let displayExpression = "";
+  let shiftMode = false;
+
+  function press(val) {
+    const operators = ['+', '-', '*', '/'];
+
+    if (operators.includes(val) && operators.includes(expression.slice(-1))) {
+      expression = expression.slice(0, -1);
+      displayExpression = displayExpression.slice(0, -1);
+    }
+
+    expression += val;
+
+    if (val === 'Math.PI') displayExpression += 'π';
+    else if (val === 'Math.E') displayExpression += 'e';
+    else if (val === 'sqrt(') displayExpression += '√(';
+    else if (val === 'log10(') displayExpression += 'log(';
+    else if (val === 'log(') displayExpression += 'ln(';
+    else displayExpression += val;
+
+    display.innerText = displayExpression;
+  }
+
+  function calculate() {
+    try {
+      const open = (expression.match(/\(/g) || []).length;
+      const close = (expression.match(/\)/g) || []).length;
+      const finalExpr = expression + ')'.repeat(open - close);
+
+      let evalExpr = finalExpr
+        .replace(/sqrt\(/g, "Math.sqrt(")
+        .replace(/log10\(/g, "Math.log10(")
+        .replace(/log\(/g, "Math.log(")
+        .replace(/sin\(/g, "Math.sin(toRad(")
+        .replace(/cos\(/g, "Math.cos(toRad(")
+        .replace(/tan\(/g, "Math.tan(toRad(")
+        .replace(/asin\(/g, "Math.asin(toRad(")
+        .replace(/acos\(/g, "Math.acos(toRad(")
+        .replace(/atan\(/g, "Math.atan(toRad(");
+
+      const result = eval(evalExpr);
+      display.innerText = result;
+      expression = result.toString();
+      displayExpression = result.toString();
+    } catch {
+      display.innerText = "Error";
+      expression = "";
+      displayExpression = "";
+    }
+  }
+
+  function clearDisplay() {
+    expression = "";
+    displayExpression = "";
+    display.innerText = "0";
+  }
+
+  function backspace() {
+    expression = expression.slice(0, -1);
+    displayExpression = displayExpression.slice(0, -1);
+    display.innerText = displayExpression || "0";
+  }
+
+  function toggleShift() {
+    shiftMode = !shiftMode;
+    document.querySelectorAll('.shift-primary').forEach(btn => {
+      btn.classList.toggle('hidden', shiftMode);
+    });
+    document.querySelectorAll('.shift-secondary').forEach(btn => {
+      btn.classList.toggle('hidden', !shiftMode);
+    });
+  }
+
+  function toRad(deg) {
+    return deg * (Math.PI / 180);
+  }
+</script>
+
+</body>
+</html>
